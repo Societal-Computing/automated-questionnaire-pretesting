@@ -41,13 +41,13 @@ def prepare_transcript(transcript_json):
 
     transcript_text = ""
     for item in transcript:
-        transcript_text += (
-            f"Question: {item['question']}\nResponse: {item['response']}\n"
-        )
+        transcript_text += f"Question: {item['question']}\nResponse: {item['response']}\nOptions: {item.get('options', '')}\nType: {item['type']}\n"
 
         if "follow_up" in item:
-            transcript_text += f"\nis_followup: {item['follow_up']}\n"
-            
+            transcript_text += "\nQuestion Type: Follow Up\n"
+        else:
+            transcript_text += "\nQuestion Type: Main Question\n"
+
     return transcript_text
 
 
@@ -130,7 +130,12 @@ for i, persona_prompt in enumerate(persona_prompts):
         print(f"Response: {response_text}")
 
         interview_transcript.append(
-            {"question": question["question"], "response": response_text}
+            {
+                "question": question["question"],
+                "type": question["type"],
+                "options": options,
+                "response": response_text,
+            }
         )
 
         print("=" * 50)
@@ -160,7 +165,12 @@ for i, persona_prompt in enumerate(persona_prompts):
             print(f"Response: {response_text}")
 
             interview_transcript.append(
-                {"question": follow_up_question, "response": response_text, "follow_up": True}
+                {
+                    "question": follow_up_question,
+                    "response": response_text,
+                    "type": "open-ended",
+                    "follow_up": True,
+                }
             )
 
             print("=" * 50)
