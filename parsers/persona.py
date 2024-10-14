@@ -7,6 +7,10 @@ def parse_persona_text(persona_file: str) -> str:
     for line in personas_text:
         if not line.strip():
             # if the line is empty, we add the persona to the list
+            # but if the record is empty, we skip it
+            if not persona:
+                continue
+
             personas.append(persona)
 
         elif "Persona" in line:  # start of a new persona
