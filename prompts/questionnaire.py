@@ -49,6 +49,10 @@ Generate 2 questions for a questionnaire for the following research question.
 1. Summary of the first article
 </relevant_articles>
 
+<relevant_questions>
+* First relevant question
+</relevant_questions>
+
 Questions:
 1. Why do you like this product?
    Type: closed-ended

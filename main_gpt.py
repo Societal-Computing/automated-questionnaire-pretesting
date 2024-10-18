@@ -7,6 +7,7 @@ import streamlit as st
 
 from models.openai import client, MODEL
 from modules.relevant_articles import get_summarized_relevant_articles
+from modules.sqp_retriever import get_ranked_questions
 from parsers.questionnaire import parse_questionnaire_text
 from evaluation.questionnaire import compute_similarity
 from prompts.questionnaire import (
@@ -66,17 +67,27 @@ with st.form("gen_form"):
             SURVEY_GENERATION_PROMPT += articles_summary
             SURVEY_GENERATION_PROMPT += "</relevant_articles>\n"
 
-            # save survey generation prompt
-            with open(f"{experiment_dir}/survey_generation_prompt.txt", "w") as f:
-                f.write(SURVEY_GENERATION_PROMPT)
-
-            # save research question
-            with open(f"{experiment_dir}/research_question.txt", "w") as f:
-                f.write(research_question)
-
             # save news summary
             with open(f"{experiment_dir}/exa_articles_summary.txt", "w") as f:
                 f.write(articles_summary)
+
+        with st.spinner("Getting 10 relevant questions from the SQP database..."):
+            relevant_questions = get_ranked_questions(
+                research_question, num_questions=10
+            )
+
+            SURVEY_GENERATION_PROMPT += "<relevant_questions>\n"
+            for q in relevant_questions:
+                SURVEY_GENERATION_PROMPT += f"* {q}\n"
+            SURVEY_GENERATION_PROMPT += "</relevant_questions>\n"
+
+        # save survey generation prompt
+        with open(f"{experiment_dir}/survey_generation_prompt.txt", "w") as f:
+            f.write(SURVEY_GENERATION_PROMPT)
+
+        # save research question
+        with open(f"{experiment_dir}/research_question.txt", "w") as f:
+            f.write(research_question)
 
         with st.spinner("Generating survey questionnaire..."):
             response = client.chat.completions.create(

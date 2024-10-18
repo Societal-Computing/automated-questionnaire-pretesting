@@ -28,7 +28,9 @@ INTERVIEW_TRANSCRIPTS_DIR = latest_experiment_dir + "/" + "interview_transcripts
 personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
 
 # prepare questionnaire for the prompt
-questions = parse_questionnaire_text(latest_experiment_dir + "/survey_questionnaire.txt")
+questions = parse_questionnaire_text(
+    latest_experiment_dir + "/survey_questionnaire.txt"
+)
 questions_text = ""
 for question in questions:
     questions_text += f"Question: {question['question']}\nType: {question['type']}\nOptions: {question.get('options', '')}\n\n"
