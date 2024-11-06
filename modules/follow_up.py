@@ -18,6 +18,7 @@ Some examples of the cognitive probing questions are:
 - Tell me more about that.
 
 Use above template along with the chat history to generate specific probing questions.
+Detect the appropriate language to use based on the context of the chat history. Otherwise, use English.
 The output should be just the question without any numbering or additional text. 
 """
 

@@ -67,6 +67,7 @@ for i, persona in enumerate(personas):
     You will be asked a series of questions based on the survey questionnaire. 
     Please answer them strictly following the details above and the chat history so far below. 
     If the question has options strictly pick just the option. For open-ended questions, answer in maximum 2-3 sentences.
+    If the question is in a language other than English, please answer in that respective language.
     """
     # persona_prompt += "You are free to extrapolate any details relevant to the question for the given persona if the details are not provided."
     persona_prompt += "Please stick strictly to the details provided above and do not deviate from them."
