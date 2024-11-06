@@ -9,7 +9,7 @@ You are given a research question based on which you will define the parameters 
 
 * Domain
    Type: String
-   Options: 'Leisure activities', 'Other domains', 'National politics',  'Living conditions and background variables', 'International politics', 'Family', 'Personal relations', 'Work', 'Health', 'European Union politics', 'Consumer behavior'
+   Options: 'Leisure activities', 'Other domains', 'National politics',  'Living conditions and background variables', 'International politics', 'Family', 'Personal relations', 'Work', 'Health', 'European Union politics', 'Consumer behaviour'
 
 Example:
 Generate the parameters for the following research question:

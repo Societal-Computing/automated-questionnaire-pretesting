@@ -1,5 +1,6 @@
 import os
 import json
+import regex as re
 
 from dotenv import load_dotenv
 
@@ -18,6 +19,8 @@ VECTOR_STORE_FILE = "data/faiss_index"  # FAISS creates a directory with this na
 
 load_dotenv()
 
+# regex for filtering out the JSON from the output
+regex = r'\{(?:[^{}]|(?R))*\}'
 
 # Load FAISS index from disk if available
 def load_faiss_index(index_file):
@@ -46,7 +49,17 @@ def generate_function_parameters(research_question):
 
     out = response.choices[0].message.content
 
-    assert json.loads(out), "The output is not in JSON format."
+    # Sometimes the ouptut isn't exactly just JSON, so we need to extract it
+    match = re.search(regex, out)
+
+    if match:
+        out = match.group(0)
+    else:
+        print(out)
+
+    # assert json.loads(out), "The output is not in JSON format."
+
+    print(out)
 
     out = json.loads(out)
 
