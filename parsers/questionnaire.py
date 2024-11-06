@@ -1,26 +1,28 @@
 import regex as re
 
-# QUESTION_REGEX = re.compile(
-#     r"\d[.] (.+[?]) ?\n\s*Type: (\bclosed-ended\b|\bopen-ended\b) ?\n\s*Options: (.+)",
-#     re.IGNORECASE
-# )
-
-QUESTION_REGEX = re.compile(
-    r"\d[.] (.+[?]) ?\n\s*Type: (\b[C|c]losed-ended\b|\b[O|o]pen-ended\b) ?\n(?:\s*Options: (.+))?"
-)
-
 
 def parse_questionnaire_text(questionnaire_file: str) -> str:
     questionnaire = open(questionnaire_file).read()
 
-    questions = QUESTION_REGEX.findall(questionnaire)
+    question_pattern = r"(\d+)\.\s*(.*?)\n\s*(.*?):\s*(.*?)\n\s*(.*?):\s*(.*)"
 
-    # Prepare the questionnaire as a JSON/dictionary
-    questions_out = []
-    for question in questions:
-        q = question[0]
-        q_type = question[1]
-        options = question[2].split(", ")
-        questions_out.append({"question": q, "type": q_type, "options": options})
+    # Find all matches
+    matches = re.findall(question_pattern, questionnaire)
 
-    return questions_out
+    # Process the matches
+    questions_list = []
+    for match in matches:
+        options = [option.strip() for option in match[5].split(",")]
+
+        if options[0] == "-":
+            # If the options are empty, set the options list to an empty list
+            options = []
+
+        question_dict = {
+            "question": match[1].strip(),
+            "type": "closed-ended" if options else "open-ended",
+            "options": options,
+        }
+        questions_list.append(question_dict)
+
+    return questions_list

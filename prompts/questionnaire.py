@@ -1,14 +1,35 @@
 # QUESTIONNNAIRE_GENERATOR_SYSTEM_PROMPT = """
-# You are a researcher working on Survey research.
 # You get a research question describing the hypothesis the researcher wants to test along with a summary from relevant recent news article as extra context.
 # Based on that you devise a survey questionnaire.
 # Make sure that the questionnaire has a list of questions and/or statements that is highly relevant, coherent, and specific to the given research question.
 
-# Think step by step about the appropriate questions to keep in the questionnaire. Each question should be very specific to the given research question. Make sure that the questions are clear, understandable, and not offensive to any demographic. For closed-ended questions, make sure that the options are complete and exhaustive.
+# Keep these rules in mind when generating the questions:
+# - Steer clear of questions that assume stereotypes or make generalizations about any culture.
+# - Use language that is respectful and considerate of cultural differences, avoiding slang or colloquialisms that may not translate well.
+# - Tailor questions to be relevant to the geographical location of the respondents, considering local customs, practices, and environmental factors.
+# - Use geographical terms and references that are accurate and familiar to the respondents based on location.
+# - Avoid questions that could be seen as discriminatory based on race, gender, age, religion, or other protected characteristics.
+# - Ensure that the questions mention legal acts.
+
+# If the generated questions break any rules above, list the question and the issue with it at the end under the Notes.
+
+# Think step by step about the appropriate questions to keep in the questionnaire.
+# Each question should be particular to the given research question.
+# Ensure the questions are clear, understandable, and not offensive to any demographic.
+# For closed-ended questions, make sure that the options are complete and exhaustive.
+# Ensure that the output follows exactly the format below without any extraneous text before or after the questions.
 
 # Example:
 # Generate 2 questions for a questionnaire for the following research question.
 # <question>Why does the public like this product?</question>
+
+# <relevant_articles>
+# 1. Summary of the first article
+# </relevant_articles>
+
+# <relevant_questions>
+# * First relevant question
+# </relevant_questions>
 
 # Questions:
 # 1. Why do you like this product?
@@ -18,6 +39,8 @@
 # 2. What suggestions do you have for the product?
 #    Type: open-ended
 #    Options: -
+
+# Notes:
 # """
 
 QUESTIONNNAIRE_GENERATOR_SYSTEM_PROMPT = """
@@ -25,21 +48,12 @@ You get a research question describing the hypothesis the researcher wants to te
 Based on that you devise a survey questionnaire.  
 Make sure that the questionnaire has a list of questions and/or statements that is highly relevant, coherent, and specific to the given research question. 
 
-Keep these rules in mind when generating the questions:
-- Steer clear of questions that assume stereotypes or make generalizations about any culture.
-- Use language that is respectful and considerate of cultural differences, avoiding slang or colloquialisms that may not translate well.
-- Tailor questions to be relevant to the geographical location of the respondents, considering local customs, practices, and environmental factors.
-- Use geographical terms and references that are accurate and familiar to the respondents based on location.
-- Avoid questions that could be seen as discriminatory based on race, gender, age, religion, or other protected characteristics.
-- Ensure that the questions mention legal acts.
-
-If the generated questions break any rules above, list the question and the issue with it at the end under the Notes.
-
 Think step by step about the appropriate questions to keep in the questionnaire. 
 Each question should be particular to the given research question. 
 Ensure the questions are clear, understandable, and not offensive to any demographic. 
 For closed-ended questions, make sure that the options are complete and exhaustive. 
 Ensure that the output follows exactly the format below without any extraneous text before or after the questions.
+If the instructions mention a specific language, generate a survey using that language. Otherwise, use English.
 
 Example:
 Generate 2 questions for a questionnaire for the following research question.
@@ -61,8 +75,6 @@ Questions:
 2. What suggestions do you have for the product?
    Type: open-ended
    Options: -
-
-Notes:
 """
 
 PERSONA_GENERATOR_SYSTEM_PROMPT = """
