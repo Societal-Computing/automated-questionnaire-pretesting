@@ -44,9 +44,9 @@ def prepare_transcript(transcript_json):
         transcript_text += f"Question: {item['question']}\nResponse: {item['response']}\nOptions: {item.get('options', '')}\nType: {item['type']}\n"
 
         if "follow_up" in item:
-            transcript_text += "\nQuestion Type: Follow Up\n"
+            transcript_text += "Question Type: Follow Up\n"
         else:
-            transcript_text += "\nQuestion Type: Main Question\n"
+            transcript_text += "Question Type: Main Question\n"
 
     return transcript_text
 
@@ -83,7 +83,6 @@ print("=" * 50)
 for i, persona_prompt in enumerate(persona_prompts):
     print(f"Persona {i + 1}\n")
     interview_transcript = []
-    persona_prompt_with_chat_history = persona_prompt
 
     for question in questions:
         if question["type"] == "closed-ended":
@@ -109,7 +108,12 @@ for i, persona_prompt in enumerate(persona_prompts):
             PROMPT += f"Options: {', '.join(options)}"
 
         # Add chat history to the persona prompt
-        persona_prompt_with_chat_history += f"\n<chat_history>\n{prepare_transcript(interview_transcript)}</chat_history>"
+        persona_prompt_with_chat_history = (
+            persona_prompt
+            + f"\n<chat_history>\n{prepare_transcript(interview_transcript)}</chat_history>"
+        )
+
+        print(f"Persona prompt with chat history: {persona_prompt_with_chat_history}")
 
         response = client.chat.completions.create(
             model=MODEL,

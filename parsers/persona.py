@@ -13,7 +13,7 @@ def parse_persona_text(persona_file: str) -> str:
 
             personas.append(persona)
 
-        elif "Persona" in line:  # start of a new persona
+        elif "Persona " in line:  # start of a new persona
             persona = {}
             continue
 
