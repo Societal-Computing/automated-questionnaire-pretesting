@@ -20,7 +20,8 @@ VECTOR_STORE_FILE = "data/faiss_index"  # FAISS creates a directory with this na
 load_dotenv()
 
 # regex for filtering out the JSON from the output
-regex = r'\{(?:[^{}]|(?R))*\}'
+regex = r"\{(?:[^{}]|(?R))*\}"
+
 
 # Load FAISS index from disk if available
 def load_faiss_index(index_file):
