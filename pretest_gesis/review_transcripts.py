@@ -5,9 +5,6 @@ from parsers.persona import parse_persona_text
 from models.openai import client, MODEL
 from prompts.reviewer import REVIEWER_SYSTEM_PROMPT
 
-
-# Get the latest experiment directory
-
 latest_experiment_dir = "./pretest_gesis/experiments"
 
 INTERVIEW_TRANSCRIPTS_DIR = latest_experiment_dir + "/" + "interview_transcripts/"
@@ -15,19 +12,24 @@ INTERVIEW_TRANSCRIPTS_DIR = latest_experiment_dir + "/" + "interview_transcripts
 # Get the list of personas for the prompt
 personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
 
+# Review survey questionnaire in parts due to context length limit
 start = 1
-end = (len(personas) + 1) // 2
+end = 51
 review_no = 1
 
 while start < len(personas):
     print("Start: ", start, "End: ", end)
+    from pretest_gesis.questionnaire import get_questionnaire
+
+    questions_text = get_questionnaire(
+        latest_experiment_dir + "/survey_questionnaire.txt"
+    )
 
     prompt_content = ""
 
     for i in range(start - 1, end - 1):
         # prepare the persona
         persona_text = f"Participant {i+1}:\n"
-        # print("PERSONA: ", persona_text)
         for key, value in personas[i].items():
             persona_text += f"{key}: {value}\n"
 
@@ -40,9 +42,6 @@ while start < len(personas):
             transcript_text = ""
             for item in transcript_json:
                 transcript_text += f"Question: {item['question']}\nResponse: {item['response']}\nType: {item['type']}\n"
-
-                if "statements" in item:
-                    transcript_text += f"Statements: {item['statements']}\n"
 
                 if "follow_up" in item:
                     transcript_text += "Question Type: Follow Up\n\n"
@@ -73,7 +72,6 @@ while start < len(personas):
             },
             {"role": "user", "content": PROMPT},
         ],
-        # response_format={"type": "json_object"},
         temperature=1.0,
     )
 
