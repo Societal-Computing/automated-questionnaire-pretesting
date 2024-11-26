@@ -6,14 +6,17 @@ import logging
 from models.openai import client, MODEL
 
 from parsers.persona import parse_persona_text
-from modules.follow_up import get_follow_up_question
 from prompts.pretest import PERSONA_SYSTEM_PROMPT
-from questionnaire import QUESTIONNAIRE
+from questionnaire import (
+    get_questionnaire,
+    NEXT_QUESTION_SELECTOR_SYSTEM_PROMPT,
+    NEXT_QUESTION_SELECTOR_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-latest_experiment_dir = "./pretest_gesis/pretest_selected_questions/experiments"
+latest_experiment_dir = "./pretest_gesis/experiments"
 
 INTERVIEW_TRANSCRIPTS_DIR = latest_experiment_dir + "/" + "interview_transcripts/"
 os.makedirs(INTERVIEW_TRANSCRIPTS_DIR, exist_ok=True)
@@ -23,7 +26,6 @@ os.makedirs(PERSONA_PROMPTS_DIR, exist_ok=True)
 
 
 def prepare_transcript(transcript_json):
-
     if isinstance(transcript_json, str):
         transcript = json.loads(transcript_json)
     else:
@@ -31,7 +33,7 @@ def prepare_transcript(transcript_json):
 
     transcript_text = ""
     for item in transcript:
-        transcript_text += f"Question: {item['question']}\nOptions: {item.get('options', '')}\nType: {item['type']}"
+        transcript_text += f"Question: {item['q_number']}. {item['question']}\nOptions: {item.get('options', '')}\nType: {item['type']}"
 
         if "follow_up" in item:
             transcript_text += "\nQuestion Type: Follow Up\n"
@@ -40,8 +42,54 @@ def prepare_transcript(transcript_json):
 
         transcript_text += f"Response: {item['response']}\n"
 
+        transcript_text += f"Next question: {item['conditions']}\n"
+
     return transcript_text
 
+
+def get_next_question(chat_history=None):
+    questionnaire_text = get_questionnaire()
+    questionnaire = get_questionnaire(convert_to_text=False)
+
+    if chat_history:
+        # Determines the next question to ask based on the chat history
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": NEXT_QUESTION_SELECTOR_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": NEXT_QUESTION_SELECTOR_PROMPT.format(
+                        prepare_transcript(chat_history)
+                    ),
+                },
+            ],
+            temperature=1.0,
+        )
+
+        next_question_number = response.choices[0].message.content
+    else:
+        # if no chat history, start from the beginning
+        next_question_number = "C1"
+
+    if next_question_number.endswith("."):
+        next_question_number = next_question_number[:-1]
+
+    if next_question_number == "End of questionnaire":
+        return None
+
+    for question in questionnaire:
+        if question["q_number"] == next_question_number:
+            return question
+    return None
+
+
+# this is the questionnaire in text form
+questionnnaire_text = get_questionnaire()
+questionnaire = get_questionnaire(convert_to_text=False)
 
 personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
 
@@ -72,22 +120,30 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
     print(f"Persona {i + 1}\n")
     interview_transcript = []
 
-    for j, q in enumerate(QUESTIONNAIRE):
+    next_question = get_next_question(chat_history=None)
+
+    while next_question:
         PROMPT = ""
 
-        PROMPT += f'{j}. {q["question"]}'
+        PROMPT += f'{next_question["q_number"]}. {next_question["question"]}'
 
-        if q["question_type"] == "matrix_style":
+        if next_question["question_type"] == "matrix_style":
             PROMPT += "    Statements:"
-            for c, s in zip(string.ascii_lowercase, q["statements"]):
-                PROMPT += f"\n    ({c}) {s}" + "(" + ", ".join(q["options"]) + ")"
-        else:
+            for c, s in zip(string.ascii_lowercase, next_question["statements"]):
+                PROMPT += (
+                    f"\n    ({c}) {s}" + "(" + ", ".join(next_question["options"]) + ")"
+                )
+        elif next_question["question_type"] == "single_choice":
             PROMPT += "    Options:"
-            for c, o in zip(string.ascii_lowercase, q["options"]):
+            for c, o in zip(string.ascii_lowercase, next_question["options"]):
                 PROMPT += f"\n    {c}) {o}"
+        else:
+            PROMPT += "    Options: - (open-ended question)"
 
-        print(f'Question: {j}. {q["question"]}')
-        print(f'Options: {q["options"]}')
+        PROMPT += f'\n    Next question: {next_question["conditions"]}\n\n'
+
+        print(f'Question: {next_question["q_number"]}. {next_question["question"]}')
+        print(f'Options: {next_question["options"]}')
 
         logging.info(f"Using model: {MODEL}")
 
@@ -106,7 +162,6 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
                 },
                 {"role": "user", "content": PROMPT},
             ],
-            # response_format={"type": "json_object"},
             temperature=1.1,
         )
 
@@ -116,49 +171,19 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
 
         interview_transcript.append(
             {
-                "question": q["question"],
-                "type": q["question_type"],
-                "options": q["options"],
+                "question": next_question["question"],
+                "type": next_question["question_type"],
+                "options": next_question["options"],
                 "response": response_text,
+                "conditions": next_question["conditions"],
+                "q_number": next_question["q_number"],
             }
         )
 
         print("=" * 50)
 
-        follow_up_question = get_follow_up_question(
-            chat_history=prepare_transcript(interview_transcript)
-        )
-
-        if follow_up_question != "n/a":
-            print(f"Follow-up Question: {follow_up_question}")
-
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": persona_prompt,
-                    },
-                    {"role": "user", "content": follow_up_question},
-                ],
-                # response_format={"type": "json_object"},
-                temperature=1.1,
-            )
-
-            response_text = response.choices[0].message.content
-
-            print(f"Response: {response_text}")
-
-            interview_transcript.append(
-                {
-                    "question": follow_up_question,
-                    "response": response_text,
-                    "type": "open-ended",
-                    "follow_up": True,
-                }
-            )
-
-            print("=" * 50)
+        # Get the next question
+        next_question = get_next_question(chat_history=interview_transcript)
 
     open(
         INTERVIEW_TRANSCRIPTS_DIR + f"interview_transcript_persona_{i+1}.txt", "w"
