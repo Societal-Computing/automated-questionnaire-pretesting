@@ -69,13 +69,13 @@ def _compute_question_similarity(questions):
     return round(similar_question_count / len(questions), 5)
 
 
-def compute_similarity(questions, research_question, metric="rouge-l"):
+def compute_similarity(questions, research_question, metric="rouge-l", n=1):
     if metric == "rouge-l":
         return _compute_rouge_l(questions, research_question)
     elif metric == "semantic":
         return _compute_semantic_similarity(questions, research_question)
     elif metric == "repetition":
-        return _compute_repetition_proportion(questions)
+        return _compute_repetition_proportion(questions, n)
     elif metric == "question-similarity":
         return _compute_question_similarity(questions)
     else:

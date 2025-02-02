@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from functools import lru_cache
 
 from dotenv import load_dotenv
 from exa_py import Exa
@@ -22,6 +23,7 @@ Generate summary for the following articles:
 
 
 # Get relevant news article excerpts and summarize them
+@lru_cache(maxsize=32)
 def get_summarized_relevant_articles(research_question, experiment_dir):
     result = exa.search_and_contents(
         research_question,

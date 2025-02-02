@@ -1,3 +1,6 @@
+# This is the initial script for simulating pilot studies.
+# Experiments might have a separate script of their own.
+
 import os
 import json
 import logging
@@ -69,7 +72,6 @@ for i, persona in enumerate(personas):
     If the question has options strictly pick just the option. For open-ended questions, answer in maximum 2-3 sentences.
     If the question is in a language other than English, please answer in that respective language.
     """
-    # persona_prompt += "You are free to extrapolate any details relevant to the question for the given persona if the details are not provided."
     persona_prompt += "Please stick strictly to the details provided above and do not deviate from them."
 
     persona_prompts.append(persona_prompt)
@@ -130,7 +132,6 @@ for i, persona_prompt in enumerate(persona_prompts):
 
         response_text = response.choices[0].message.content
 
-        # response_text = response["message"]["content"]
 
         print(f"Response: {response_text}")
 

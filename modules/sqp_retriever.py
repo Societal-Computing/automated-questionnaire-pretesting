@@ -1,6 +1,7 @@
 import os
 import json
 import regex as re
+from functools import lru_cache
 
 from dotenv import load_dotenv
 
@@ -86,6 +87,7 @@ def filter_questions(research_question):
     return questions
 
 
+@lru_cache(maxsize=32)
 def get_ranked_questions(research_question, num_questions=10):
     questions = filter_questions(research_question)
 
