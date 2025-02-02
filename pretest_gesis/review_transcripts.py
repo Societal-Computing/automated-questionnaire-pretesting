@@ -10,11 +10,17 @@ latest_experiment_dir = "./pretest_gesis/experiments"
 INTERVIEW_TRANSCRIPTS_DIR = latest_experiment_dir + "/" + "interview_transcripts/"
 
 # Get the list of personas for the prompt
-personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
+# personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
+
+import pickle
+
+personas = pickle.load(
+    open(latest_experiment_dir + "/survey_personas/survey_personas.pkl", "rb")
+)
 
 # Review survey questionnaire in parts due to context length limit
 start = 1
-end = 51
+end = 26
 review_no = 1
 
 while start < len(personas):
@@ -86,5 +92,5 @@ while start < len(personas):
     review_no += 1
 
     start = end
-    end += 50
+    end += 25
     end = min(end, len(personas) + 1)

@@ -1,5 +1,6 @@
 import os
 import json
+import glob
 import string
 import logging
 
@@ -91,7 +92,10 @@ def get_next_question(chat_history=None):
 questionnnaire_text = get_questionnaire()
 questionnaire = get_questionnaire(convert_to_text=False)
 
-personas = parse_persona_text(latest_experiment_dir + "/survey_personas.txt")
+personas = []
+
+for f in glob.glob(latest_experiment_dir + "/survey_personas/*.txt"):
+    personas.extend(parse_persona_text(f))
 
 persona_prompts = []
 
@@ -103,7 +107,7 @@ for i, persona in enumerate(personas, start=0):
     persona_prompt += """
     You will be asked a series of questions based on the survey questionnaire. 
     Please answer them strictly following the details above and the chat history so far below. 
-    If the question has options strictly pick just the option. For open-ended questions, answer in maximum 2-3 sentences.
+    If the question has options strictly pick an option from the provided options.
     If the question is in a language other than English, please answer in that respective language.
     """
     persona_prompt += "Please stick strictly to the details provided above and do not deviate from them."
@@ -123,6 +127,10 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
     next_question = get_next_question(chat_history=None)
 
     while next_question:
+        next_question["question"] = next_question["question"].replace(
+            "tick", "select"
+        )  # maybe asking to select is better
+
         PROMPT = ""
 
         PROMPT += f'{next_question["q_number"]}. {next_question["question"]}'
@@ -133,14 +141,15 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
                 PROMPT += (
                     f"\n    ({c}) {s}" + "(" + ", ".join(next_question["options"]) + ")"
                 )
-        elif next_question["question_type"] == "single_choice":
-            PROMPT += "    Options:"
+        elif (
+            next_question["question_type"] == "single_choice"
+            or next_question["question_type"] == "multiple_choice"
+        ):
+            PROMPT += "\n    Options:"
             for c, o in zip(string.ascii_lowercase, next_question["options"]):
                 PROMPT += f"\n    {c}) {o}"
         else:
-            PROMPT += "    Options: - (open-ended question)"
-
-        PROMPT += f'\n    Next question: {next_question["conditions"]}\n\n'
+            PROMPT += "\n    This is an open-ended question. Respond accordingly."
 
         print(f'Question: {next_question["q_number"]}. {next_question["question"]}')
         print(f'Options: {next_question["options"]}')
@@ -148,10 +157,12 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
         logging.info(f"Using model: {MODEL}")
 
         # Add chat history to the persona prompt
-        persona_prompt_with_chat_history = (
-            persona_prompt
-            + f"\n<chat_history>\n{prepare_transcript(interview_transcript)}</chat_history>"
+        prompt_with_chat_history = (
+            f"\n<chat_history>\n{prepare_transcript(interview_transcript)}</chat_history>\n"
+            + f"<question>\n{PROMPT}</question>"
         )
+
+        prompt_with_chat_history += "\n" + "Select the exact option from above options."
 
         response = client.chat.completions.create(
             model=MODEL,
@@ -160,7 +171,7 @@ for i, persona_prompt in enumerate(persona_prompts, start=0):
                     "role": "system",
                     "content": persona_prompt,
                 },
-                {"role": "user", "content": PROMPT},
+                {"role": "user", "content": prompt_with_chat_history},
             ],
             temperature=1.1,
         )
