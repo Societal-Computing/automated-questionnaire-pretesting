@@ -178,3 +178,4 @@ pyrightconfig.json
 
 # Experiments
 experiments/
+*.txt
