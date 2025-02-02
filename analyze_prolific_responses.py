@@ -7,12 +7,8 @@ You will be given a list of responses for the question 'Why did you prefer this 
 You then list the top 5 themes with 10 responses in each theme. You will also provide a brief description of each theme.
 """
 
-reasons = pickle.load(
-    open("reasons_experts.pkl", "rb")
-)
-labels = pickle.load(
-    open("labels_experts.pkl", "rb")
-)
+reasons = pickle.load(open("reasons_experts.pkl", "rb"))
+labels = pickle.load(open("labels_experts.pkl", "rb"))
 
 PROMPT = f"""
 Do thematic analysis for the following responses:

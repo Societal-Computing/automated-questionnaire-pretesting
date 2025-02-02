@@ -170,7 +170,9 @@ for idx, research_question in enumerate(research_questions, start=1):
     relevant_questions = get_ranked_questions(research_question, num_questions=10)
 
     # Save the relevant questions to a file
-    with open(f"{output_dir}/relevant_questions/relevant_questions_RQ=RQ{idx}.txt", "w") as f:
+    with open(
+        f"{output_dir}/relevant_questions/relevant_questions_RQ=RQ{idx}.txt", "w"
+    ) as f:
         for q in relevant_questions:
             f.write(f"* {q}\n")
 

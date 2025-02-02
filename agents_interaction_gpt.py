@@ -132,7 +132,6 @@ for i, persona_prompt in enumerate(persona_prompts):
 
         response_text = response.choices[0].message.content
 
-
         print(f"Response: {response_text}")
 
         interview_transcript.append(
